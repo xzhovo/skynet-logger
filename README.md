@@ -1,5 +1,5 @@
 # Skynet 日志文件服务
-修改自 [Veinin/skynet-logger](https://github.com/Veinin/skynet-logger)，实现按日期建文件夹，单个服务可享有独立日志文件  
+修改自 [Veinin/skynet-logger](https://github.com/Veinin/skynet-logger)，扩展实现按日期建文件夹，单个服务可享有独立日志文件  
 
 需要**修改 skynet 配置**文件：
 ```
@@ -44,12 +44,15 @@ API
 `log.separate(path, file, no_change_dir)` 以 `path` 为独立目录， `file` 为文件名，独立一份日志文件 */path/file.log* 记录当前服务，设置 `no_change_dir` 不在凌晨不转移目录文件  
 `log.forward(path, file)` 当前服务日志转接到 */path/file.log* 文件中，不传值时转到默认的主文件 *skynet.log*  
 `log.close()` 关闭当前服务独立的日志文件，即 `io.close`  
+注意  
+本服务使用 `skynet.time()` 做日志时间，即 skynet 程序时间而非系统时间  
 
 示例：  
 ```
 log.info("info something")
 log.debug("debug something")
 log.error("get error", "i am error")
+skynet.error("called skynet.error")
 log.info("i will separate")
 log.separate("separate", "separateOne")
 log.info("separate done")
@@ -64,15 +67,20 @@ log.info("separate again done")
 log.info("i will forward to", "separate/separateOne.log")
 log.forward("separate", "separateOne")
 log.info("forward to", "separate/separateOne.log", "done")
+
+log.close()
+skynet.exit()
 ```
 *./log/20190824/skynet.log* 结果如下：  
 ```
 [:00000008][12:04:44][info  ] info something
 [:00000008][12:04:44][debug ] debug something
 [:00000008][12:04:44][ error] get error i am error   <main.lua:54>
+[:00000008][12:04:44][SKYNET] called skynet.error
 [:00000008][12:04:44][info  ] i will separate
 [:00000008][12:04:44][info  ] forward done
 [:00000008][12:04:44][info  ] i will separate again
+[:00000008][12:04:44][SKYNET] KILL self
 ```
 *./log/20190824/separate/separateOne.log* 结果如下：  
 ```
