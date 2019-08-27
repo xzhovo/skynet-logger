@@ -2,7 +2,7 @@ local skynet = require "skynet"
 require "skynet.manager"
 
 local MAIN_LOG_NAME = "skynet"
-local ZERO_MOVE_TIME = 0
+local ZERO_MOVE_TIME = 0 --second
 
 local init = false
 local log_service = {}
@@ -41,7 +41,7 @@ local function time_dir()
 
 	local tomorrow_zore_time = os.time({year=curr_time.year, month=curr_time.month, day=curr_time.day, hour=0,min=0,sec=0}) + 86400 + ZERO_MOVE_TIME
 
-	skynet.timeout(tomorrow_zore_time-now, function()
+	skynet.timeout((tomorrow_zore_time-now)*100, function()
 		time_dir()
 	end )
 end
