@@ -3,13 +3,14 @@ require "skynet.manager"
 
 local MAIN_LOG_NAME = "skynet"
 local ZERO_MOVE_TIME = 0 --second
+local DEFAULT_FILE_MODE = "w"
 
 local init = false
 local log_service = {}
 local service_file = {}
 local log_service_no_change = {}
 local dir_path = {}
-local forward = {}
+local file_mode = {}
 local is_daemon = skynet.getenv("daemon") ~= nil
 local log_path = skynet.getenv("logpath")
 
@@ -22,11 +23,11 @@ end
 local function time_dir()
 	local now = math.floor(skynet.time())
 	local curr_time = {}
-	curr_time.year = tonumber(os.date("%Y", now))
-    curr_time.month = tonumber(os.date("%m", now))
-    curr_time.day = tonumber(os.date("%d", now))
+	curr_time.year = os.date("%Y", now)
+    curr_time.month = os.date("%m", now)
+    curr_time.day = os.date("%d", now)
 
-	log_path = skynet.getenv("logpath")..string.format("%04d%02d%02d", curr_time.year, curr_time.month, curr_time.day).."/"
+	log_path = skynet.getenv("logpath")..curr_time.year..curr_time.month..curr_time.day.."/"
 	check_exists(log_path)
 	for _, path in pairs(dir_path) do
 		check_exists(log_path..path)
@@ -47,7 +48,7 @@ local function time_dir()
 end
 
 local function file_path(path_file)
-	return string.format("%s%s.log", log_path, path_file)
+	return log_path .. path_file .. ".log"
 end
 
 local function try_open_file(source)
@@ -62,9 +63,9 @@ local function try_open_file(source)
 		return opend_file
 	end
 
-	local args = "w"
-	if forward[source] then
-		args = "a"
+	local args = DEFAULT_FILE_MODE
+	if file_mode[source] then
+		args = file_mode[source]
 	end
 	local f, e = io.open(file_path(path_file), args)
 	if not f then
@@ -105,9 +106,9 @@ function CMD.logging(source, type, str)
 	logging_fun(str, source)
 end
 
-function CMD.separate(source, path, file, no_change_dir)
+function CMD.separate(source, path, file, no_change_dir, mode)
     if is_daemon then
-    	forward[source] = nil
+    	file_mode[source] = mode or DEFAULT_FILE_MODE
         check_exists(log_path..path)
         dir_path[source] = path
         log_service[source] = path.."/"..file
@@ -122,18 +123,18 @@ function CMD.close(source)
         io.close(service_file[source])
         log_service[source] = nil
         service_file[source] = nil
-        forward[source] = nil
+        file_mode[source] = nil
     end
 end
 
-function CMD.forward(source, path, file, no_change_dir)
+function CMD.forward(source, path, file, no_change_dir, mode)
     if is_daemon then
     	if not path then
     		CMD.close(source)
     	else
     		CMD.close(source)
 	        CMD.separate(source, path, file, no_change_dir)
-	        forward[source] = true
+	        file_mode[source] = mode or DEFAULT_FILE_MODE
 	    end
     end
 end
@@ -152,7 +153,7 @@ skynet.register_protocol {
 	id = skynet.PTYPE_SYSTEM,
 	unpack = function(...) return ... end,
 	dispatch = function(_, source)
-		CMD.reopen(source, "FATAL", "SIGHUP")
+		CMD.reopen(source, "SIGHUP", "SIGHUP")
 	end
 }
 

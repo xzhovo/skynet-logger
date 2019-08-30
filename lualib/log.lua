@@ -18,14 +18,14 @@ local OUT_PUT_LEVEL = LOG_LEVEL.DEBUG
 
 local LOG_LEVEL_DESC = {
     [1] = "debug ",
-    [2] = "info  ",
-    [3] = "  warn",
+    [2] = " info ",
+    [3] = " warn ",
     [4] = " error",
     [5] = " fatal",
 }
 
 local send_log_fun = function(level, str)
-    skynet.error(string.format("%s", str))
+    skynet.error(str)
 end
 if user_logger_swith then
     if is_daemon then
@@ -39,19 +39,7 @@ if user_logger_swith then
     end
 end
 
-local function format(fmt, ...)
-    local ok, str = pcall(string.format, fmt, ...)
-    if ok then
-        return str
-    else
-        return "error format : " .. fmt
-    end
-end
-
 local function send_log(level, ...)
-    -- if level < OUT_PUT_LEVEL then
-    --     return
-    -- end
 
     local str = ""
     local argsNum = select("#", ...)
@@ -65,7 +53,6 @@ local function send_log(level, ...)
                 str = str .. " "
             end
         end
-        --str = format(...)
     end
 
     if level >= LOG_LEVEL.WARN then
@@ -79,9 +66,9 @@ local function send_log(level, ...)
     send_log_fun(level, str)
 end
 
-function log.separate(path, file, no_change_dir)
+function log.separate(path, file, no_change_dir, mode)
     if is_daemon and user_logger_swith then
-        skynet.call(".logger", "lua", "separate", path, file, no_change_dir)
+        skynet.call(".logger", "lua", "separate", path, file, no_change_dir, mode)
     end
 end
 
@@ -91,33 +78,33 @@ function log.close()
     end
 end
 
-function log.forward(path, file, no_change_dir)
+function log.forward(path, file, no_change_dir, mode)
     if is_daemon and user_logger_swith then
-        skynet.call(".logger", "lua", "forward", path, file, no_change_dir)
+        skynet.call(".logger", "lua", "forward", path, file, no_change_dir, mode)
     end
 end
 
-function log.debug(fmt, ...)
+function log.debug(...)
     if not debug_swith then
         return 
     end
-    send_log(LOG_LEVEL.DEBUG, fmt, ...)
+    send_log(LOG_LEVEL.DEBUG, ...)
 end
 
-function log.info(fmt, ...)
-    send_log(LOG_LEVEL.INFO, fmt, ...)
+function log.info(...)
+    send_log(LOG_LEVEL.INFO, ...)
 end
 
-function log.warning(fmt, ...)
-    send_log(LOG_LEVEL.WARN, fmt, ...)
+function log.warning(...)
+    send_log(LOG_LEVEL.WARN, ...)
 end
 
-function log.error(fmt, ...)
-    send_log(LOG_LEVEL.ERROR, fmt, ...)
+function log.error(...)
+    send_log(LOG_LEVEL.ERROR, ...)
 end
 
-function log.fatal(fmt, ...)
-    send_log(LOG_LEVEL.FATAL, fmt, ...)
+function log.fatal(...)
+    send_log(LOG_LEVEL.FATAL, ...)
 end
 
 return log
