@@ -42,8 +42,8 @@ API
 `log.error(...)` 错误信息，虽然发生错误事件，但仍然不影响系统的继续运行（会追加打印最后的文件调用位置  
 `log.fatal(...)` 严重的错误事件将会导致应用程序的退出（会追加打印最后的文件调用位置  
 **操作 API**  
-`log.separate(source, path, file, no_change_dir, mode)` 以 `path` 为独立目录， `file` 为文件名，独立一份日志文件 */path/file.log* 记录当前服务，设置 `no_change_dir` 在凌晨不转移目录文件，`mode` 文件打开模式，通常为 `"w"` 或 `"a"` ，不填则为默认的 `DEFAULT_FILE_MODE`  
-`log.forward(source, path, file, no_change_dir, mode)` 当前服务日志转接到 */path/file.log* 文件中，不传值时转到默认的主文件 *skynet.log*，其他参数同上  
+`log.separate(path, file, no_change_dir, mode)` 以 `path` 为独立目录， `file` 为文件名，独立一份日志文件 */path/file.log* 记录当前服务，设置 `no_change_dir` 在凌晨不转移目录文件，`mode` 文件打开模式，通常为 `"w"` 或 `"a"` ，不填则为默认的 `DEFAULT_FILE_MODE`  
+`log.forward(path, file, no_change_dir, mode)` 当前服务日志转接到 */path/file.log* 文件中，不传值时转到默认的主文件 *skynet.log*，其他参数同上  
 `log.close()` 关闭当前服务独立的日志文件，即 `io.close`  
 注意  
 本服务使用 `skynet.time()` 做日志时间，即 skynet 程序时间而非系统时间  
